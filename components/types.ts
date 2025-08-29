@@ -1,16 +1,20 @@
-export interface ItemData {
-  [key: string]: string;
-}
-
-export interface ChildCategory {
-  records: Item[];
-}
-
-export interface Children {
-  [category: string]: ChildCategory;
-}
-
 export interface Item {
-  data: ItemData;
-  children: Children;
+  data: {
+    ID: string;
+    Name: string;
+    Gender: string;
+    Ability: string;
+    "Minimal distance": string;
+    Weight: string;
+    Born: string;
+    "In space since": string;
+    "Beer consumption (l/y)": string;
+    "Knows the answer?": string;
+  };
+
+  children: {
+    [category: string]: {
+      records: Item[];
+    };
+  };
 }

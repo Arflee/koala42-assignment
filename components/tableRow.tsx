@@ -1,44 +1,74 @@
 "use client";
 
-import React, { memo, useMemo } from "react";
-import { Item } from "./types";
+import React, { memo } from "react";
+import { ChevronRight, ChevronDown, X } from "lucide-react";
 import { useExpandCollapse } from "@/hooks/useExpandCollapse";
-import { v4 as uuidv4 } from "uuid";
 import clsx from "clsx";
+import { ItemWithUuid } from "@/hooks/useHierarchyData";
 
-interface TableRowProps {
-  item: Item;
+interface Props {
+  item: ItemWithUuid;
   level?: number;
+  onRemove: (id: string) => void;
 }
 
-function TableRow({ item, level = 0 }: TableRowProps) {
+function TableRow({ item, level = 0, onRemove }: Props) {
   const { toggle, isExpanded } = useExpandCollapse();
   const hasChildren = Object.values(item.children).some(
     (cat) => cat.records.length > 0
   );
-
-  const rowId = useMemo(() => uuidv4(), []);
-
   return (
     <>
       <tr
         className={clsx(
-          "hover:bg-gray-100 transition-colors",
+          "hover:bg-gray-800 transition-colors text-center",
           hasChildren ? "cursor-pointer" : "cursor-default",
           `pl-[${level * 20}px]`
         )}
-        onClick={() => hasChildren && toggle(rowId)}
       >
+        <td className="px-2 py-2" style={{ paddingLeft: `${level * 1.5}rem` }}>
+          {hasChildren && (
+            <button
+              onClick={() => hasChildren && toggle(item.uuid)}
+              className="text-gray-300"
+            >
+              {isExpanded(item.uuid) ? (
+                <ChevronDown size={16} />
+              ) : (
+                <ChevronRight size={16} />
+              )}
+            </button>
+          )}
+        </td>
         {Object.values(item.data).map((value, idx) => (
           <td key={idx}>{value}</td>
         ))}
+        <td className="px-3 py-2 text-center">
+          <button
+            onClick={() => onRemove(item.uuid)}
+            className="text-red-500 hover:text-red-400"
+          >
+            <X size={18} />
+          </button>
+        </td>
       </tr>
 
       {hasChildren &&
-        isExpanded(rowId) &&
-        Object.entries(item.children).map(([category, childCategory]) =>
+        isExpanded(item.uuid) &&
+        Object.entries(item.children).map(([_, childCategory]) =>
           childCategory.records.map((child) => (
-            <TableRow key={uuidv4()} item={child} level={level + 1} />
+            <>
+            <th></th>
+              {Object.keys(child.data).map((key, id) => (
+              <th className="bg-teal-500 text-black" key={id}>{key}</th>
+            ))}
+              <TableRow
+                key={child.uuid}
+                item={child}
+                onRemove={onRemove}
+                level={level + 1}
+              />
+            </>
           ))
         )}
     </>
